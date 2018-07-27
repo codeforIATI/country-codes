@@ -11,6 +11,25 @@ environ['SCRAPERWIKI_DATABASE_NAME'] = 'sqlite:///data.sqlite'
 import scraperwiki
 
 
+def wait_for_page_to_load(browser, css):
+    timeout = 60
+    rate = 1
+
+    timer = 0
+    while True:
+        if timer >= timeout:
+            raise Exception('Timed out.')
+        try:
+            element = browser.find_element_by_css_selector(css)
+            break
+        except NoSuchElementException:
+            print('Waiting for page to load ...')
+            time.sleep(rate)
+        timer += rate
+    print('Page has loaded!')
+    return element
+
+
 # path to chromedriver
 chromedriver_path = '/usr/local/bin/chromedriver'
 
@@ -26,16 +45,7 @@ officially_assigned_code_elements_css = 'td[class="grs-status1"]'
 
 url = base_url + '#iso:pub:PUB500001:en'
 browser.get(url)
-
-while True:
-    try:
-        table = browser.find_element_by_css_selector(table_css)
-        break
-    except NoSuchElementException:
-        print('Waiting for page to load ...')
-        time.sleep(1)
-
-print('Page has loaded!')
+table = wait_for_page_to_load(browser, table_css)
 
 table_cells = table.find_elements_by_css_selector(
     officially_assigned_code_elements_css)
