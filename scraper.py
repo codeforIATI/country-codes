@@ -30,19 +30,23 @@ def wait_for_page_to_load(browser, css):
     return element
 
 
-# path to chromedriver
-chromedriver_path = '/usr/local/bin/chromedriver'
+def setup_browser():
+    # path to chromedriver
+    chromedriver_path = '/usr/local/bin/chromedriver'
 
-chrome_options = Options()
-chrome_options.add_argument("--headless")
-browser = webdriver.Chrome(
-    executable_path=chromedriver_path,
-    chrome_options=chrome_options)
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")
+    browser = webdriver.Chrome(
+        executable_path=chromedriver_path,
+        chrome_options=chrome_options)
+    return browser
+
 
 base_url = 'https://www.iso.org/obp/ui/'
 table_css = 'table[class="grs-grid"]'
 officially_assigned_code_elements_css = 'td[class="grs-status1"]'
 
+browser = setup_browser()
 url = base_url + '#iso:pub:PUB500001:en'
 browser.get(url)
 table = wait_for_page_to_load(browser, table_css)
