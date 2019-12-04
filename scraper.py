@@ -11,7 +11,10 @@ environ['SCRAPERWIKI_DATABASE_NAME'] = 'sqlite:///data.sqlite'
 import scraperwiki
 
 
-def wait_for_page_to_load(browser, css):
+def wait_for_page_to_load(browser, url, css):
+    print('Waiting for page to load ... ' + url)
+    browser.get(url)
+
     timeout = 60
     rate = 1
 
@@ -23,7 +26,7 @@ def wait_for_page_to_load(browser, css):
             element = browser.find_element_by_css_selector(css)
             break
         except NoSuchElementException:
-            print('Waiting for page to load ...')
+            print('Waiting for page to load ... ' + url)
             time.sleep(rate)
         timer += rate
     print('Page has loaded!')
@@ -42,22 +45,30 @@ def setup_browser():
     return browser
 
 
+languages = ['en', 'fr']
 base_url = 'https://www.iso.org/obp/ui/'
 table_css = 'table[class="grs-grid"]'
 officially_assigned_code_elements_css = 'td[class="grs-status1"]'
 
 browser = setup_browser()
 url = base_url + '#iso:pub:PUB500001:en'
-browser.get(url)
-table = wait_for_page_to_load(browser, table_css)
+table = wait_for_page_to_load(browser, url, table_css)
 
 table_cells = table.find_elements_by_css_selector(
     officially_assigned_code_elements_css)
 
-for cell in table_cells:
-    row = {
-        'code': cell.text,
-        'name': cell.get_attribute('title'),
-        'url': cell.find_element_by_tag_name('a').get_attribute('href'),
-    }
-    scraperwiki.sqlite.save(['code'], row, 'data')
+countries = [{
+    'code': cell.text,
+    'href': '#' + cell.find_element_by_tag_name('a').get_attribute('href').split('#')[1],
+} for cell in table_cells]
+
+for country in countries:
+    el = 'div[class="core-view-summary"]'
+    for language in languages:
+        url = base_url + language + '/' + country['href']
+        table = wait_for_page_to_load(browser, url, el)
+        values = table.find_elements_by_css_selector(
+            'div[class="core-view-line"] div[class="core-view-field-value"]')
+        country['name_' + language] = values[2].text
+
+    scraperwiki.sqlite.save(['code'], country, 'data')
