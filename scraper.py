@@ -12,6 +12,7 @@ import scraperwiki
 
 
 def wait_for_page_to_load(browser, url, css):
+    browser.get('chrome://newtab')
     print('Waiting for page to load ... ' + url)
     browser.get(url)
 
@@ -36,7 +37,6 @@ def wait_for_page_to_load(browser, url, css):
 def setup_browser():
     # path to chromedriver
     chromedriver_path = '/usr/local/bin/chromedriver'
-
     chrome_options = Options()
     chrome_options.add_argument("--headless")
     browser = webdriver.Chrome(
@@ -45,22 +45,38 @@ def setup_browser():
     return browser
 
 
-languages = ['en', 'fr']
+languages = ['fr']
 base_url = 'https://www.iso.org/obp/ui/'
 table_css = 'table[class="grs-grid"]'
-officially_assigned_code_elements_css = 'td[class="grs-status1"]'
 
 browser = setup_browser()
 url = base_url + '#iso:pub:PUB500001:en'
 table = wait_for_page_to_load(browser, url, table_css)
 
-table_cells = table.find_elements_by_css_selector(
+officially_assigned_code_elements_css = 'td[class="grs-status1"]'
+officially_assigned = table.find_elements_by_css_selector(
     officially_assigned_code_elements_css)
+
+exceptionally_reserved_code_elements_css = 'td[class="grs-status4"]'
+exceptionally_reserved = table.find_elements_by_css_selector(
+    exceptionally_reserved_code_elements_css)
 
 countries = [{
     'code': cell.text,
+    'name_en': cell.get_attribute('title'),
     'href': '#' + cell.find_element_by_tag_name('a').get_attribute('href').split('#')[1],
-} for cell in table_cells]
+    'active': False,
+} for cell in exceptionally_reserved]
+
+countries += [{
+    'code': cell.text,
+    'name_en': cell.get_attribute('title'),
+    'href': '#' + cell.find_element_by_tag_name('a').get_attribute('href').split('#')[1],
+    'active': True,
+} for cell in officially_assigned]
+
+for country in countries:
+    scraperwiki.sqlite.save(['code'], country, 'data')
 
 for country in countries:
     el = 'div[class="core-view-summary"]'
@@ -70,5 +86,4 @@ for country in countries:
         values = table.find_elements_by_css_selector(
             'div[class="core-view-line"] div[class="core-view-field-value"]')
         country['name_' + language] = values[2].text
-
     scraperwiki.sqlite.save(['code'], country, 'data')
