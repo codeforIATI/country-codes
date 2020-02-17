@@ -76,4 +76,5 @@ for country in countries:
         values = table.find_by_css(
             'div[class="core-view-line"] div[class="core-view-field-value"]')
         country['name_' + language] = values[2].text
+        country['code_3_digit'] = values[4].text
     scraperwiki.sqlite.save(['code'], country, 'data')
