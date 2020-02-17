@@ -1,2 +1,2 @@
 scraperwiki==0.5.1
-selenium==3.14.1
+splinter==0.13.0
