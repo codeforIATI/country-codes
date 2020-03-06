@@ -53,14 +53,14 @@ exceptionally_reserved = table.find_by_css(
 
 countries = [{
     'code': cell.text,
-    'name_en': cell['title'],
+    'name_en': cell['title'].rstrip('*'),
     'href': '#' + cell.find_by_tag('a')['href'].split('#')[1],
     'active': False,
 } for cell in exceptionally_reserved]
 
 countries += [{
     'code': cell.text,
-    'name_en': cell['title'],
+    'name_en': cell['title'].rstrip('*'),
     'href': '#' + cell.find_by_tag('a')['href'].split('#')[1],
     'active': True,
 } for cell in officially_assigned]
@@ -75,6 +75,6 @@ for country in countries:
         table = wait_for_page_to_load(browser, url, el)
         values = table.find_by_css(
             'div[class="core-view-line"] div[class="core-view-field-value"]')
-        country['name_' + language] = values[2].text
+        country['name_' + language] = values[2].text.rstrip('*')
         country['code_3_digit'] = values[4].text
     scraperwiki.sqlite.save(['code'], country, 'data')
