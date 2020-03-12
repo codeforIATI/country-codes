@@ -66,9 +66,6 @@ countries += [{
 } for cell in officially_assigned]
 
 for country in countries:
-    scraperwiki.sqlite.save(['code'], country, 'data')
-
-for country in countries:
     el = 'div[class="core-view-summary"]'
     for language in languages:
         url = base_url + language + '/' + country['href']
@@ -77,4 +74,6 @@ for country in countries:
             'div[class="core-view-line"] div[class="core-view-field-value"]')
         country['name_' + language] = values[2].text.rstrip('*')
         country['code_3_digit'] = values[4].text
+
+for country in countries:
     scraperwiki.sqlite.save(['code'], country, 'data')
