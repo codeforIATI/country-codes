@@ -1,12 +1,13 @@
-from os import environ
+import os
 import time
+import csv
 
 from splinter import Browser
 from selenium.webdriver.chrome.options import Options
 
 # hack to override sqlite database filename
 # see: https://help.morph.io/t/using-python-3-with-morph-scraperwiki-fork/148
-environ['SCRAPERWIKI_DATABASE_NAME'] = 'sqlite:///data.sqlite'
+os.environ['SCRAPERWIKI_DATABASE_NAME'] = 'sqlite:///data.sqlite'
 import scraperwiki
 
 
@@ -75,5 +76,13 @@ for country in countries:
         country['name_' + language] = values[2].text.rstrip('*')
         country['code_3_digit'] = values[4].text
 
-for country in countries:
-    scraperwiki.sqlite.save(['code'], country, 'data')
+
+os.makedirs("output", exist_ok=True)
+with open(os.path.join("output", "country_codes.csv"), 'w') as csv_f:
+    csvwriter = csv.DictWriter(csv_f, fieldnames=countries[0].keys())
+    csvwriter.writeheader()
+    for country in countries:
+        csvwriter.writerow(country)
+        if os.environ.get("GITHUB_PAGES", False) is False:
+            scraperwiki.sqlite.save(['code'], country, 'data')
+print ("Done.")
