@@ -42,7 +42,7 @@ browser = setup_browser()
 url = base_url + '#iso:pub:PUB500001:en'
 
 load_page(browser, url)
-while True:
+for x in range(10):
     try:
         exceptionally_reserved_code_elements_css = 'table[class="grs-grid"] td[class="grs-status4"]'
         exceptionally_reserved = find_elements(
@@ -56,9 +56,11 @@ while True:
         } for cell in exceptionally_reserved]
         break
     except StaleElementReferenceException:
-        pass
+        print("Retrying ...")
+else:
+    raise Exception("Giving up")
 
-while True:
+for x in range(10):
     try:
         officially_assigned_code_elements_css = 'table[class="grs-grid"] td[class="grs-status1"]'
         officially_assigned = find_elements(
@@ -73,13 +75,15 @@ while True:
         break
     except StaleElementReferenceException:
         print("Retrying ...")
+else:
+    raise Exception("Giving up")
 
 for country in countries:
     el = 'div[class="core-view-summary"] div[class="core-view-line"] div[class="core-view-field-value"]'
     for language in languages:
         url = base_url + language + '/' + country['href']
         load_page(browser, url)
-        while True:
+        for x in range(10):
             try:
                 values = find_elements(browser, el)
                 country['name_' + language] = values[2].text.rstrip('*')
@@ -87,6 +91,8 @@ for country in countries:
                 break
             except StaleElementReferenceException:
                 print("Retrying ...")
+        else:
+            raise Exception("Giving up")
 
 os.makedirs("output", exist_ok=True)
 with open(os.path.join("output", "country_codes.csv"), 'w') as csv_f:
