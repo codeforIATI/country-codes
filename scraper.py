@@ -85,4 +85,4 @@ with open(os.path.join("output", "country_codes.csv"), 'w') as csv_f:
         csvwriter.writerow(country)
         if os.environ.get("GITHUB_PAGES", False) is False:
             scraperwiki.sqlite.save(['code'], country, 'data')
-print ("Done.")
+print("Done.")
