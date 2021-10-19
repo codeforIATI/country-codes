@@ -28,7 +28,10 @@ jobs:
         env:
           GITHUB_PAGES: true
       - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
+        uses: JamesIves/github-pages-deploy-action@4.1.5
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./output
+          branch: gh-pages
+          folder: output
+          token: ${{ secrets.GH_TOKEN }}
+          git-config-name: Code for IATI bot
+          git-config-email: 57559326+codeforIATIbot@users.noreply.github.com
